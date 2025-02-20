@@ -6,7 +6,7 @@ class IdentityEncoder(nn.Module):
     """
     Identity Encoder which identifies features from a face in an image using a pre-trained ArcFace model.
     """
-    def __init__(self, pretrained=True, model_path=None):
+    def __init__(self, pretrained=True, model_path='ms1mv3_arcface_r100_fp16.pth'):
         """
         Args:
         - pretrained (bool): whether to load pre-trained weights
