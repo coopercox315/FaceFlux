@@ -5,6 +5,7 @@ from dependencies.insightface.recognition.arcface_torch.backbones import get_mod
 class IdentityEncoder(nn.Module):
     """
     Identity Encoder which identifies features from a face in an image using a pre-trained ArcFace model.
+    This encoder is passed the target identity image (the person whose identity we want to transfer to the source image).
     """
     def __init__(self, pretrained=True, model_path='ms1mv3_arcface_r100_fp16.pth'):
         """
