@@ -22,8 +22,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 dataset_A = FaceDataset(root_dir='data/processed/subjectA', transform=generator_transform) #for source (content) images [128x128, normalized to [-1,1]]
 dataset_B = FaceDataset(root_dir='data/processed/subjectB', transform=identity_transform) #for target (identity) images [112x112, ImageNet normalization for ArcFace]
 
-dataloader_A = DataLoader(dataset_A, batch_size=config['batch_size'], shuffle=True)
-dataloader_B = DataLoader(dataset_B, batch_size=config['batch_size'], shuffle=True)
+dataloader_A = DataLoader(dataset_A, batch_size=config['batch_size'], shuffle=True, drop_last=True)
+dataloader_B = DataLoader(dataset_B, batch_size=config['batch_size'], shuffle=True, drop_last=True)
 
 #Initialize the generator (FaceSwapModel) and discriminator
 generator = FaceSwapModel(content_latent_dim=config['content_latent_dim']).to(device)
@@ -63,8 +63,9 @@ def train():
 
             loss_recon = criterion_recon(fake_face, batchA) #reconstruction loss (compares generated face content to input face content)
 
+            fake_face_112 = nn.functional.interpolate(fake_face, size=(112, 112), mode='bicubic') #resize to 112x112 for identity encoder
             with torch.inference_mode():
-                fake_identity = generator.identity_encoder(fake_face)
+                fake_identity = generator.identity_encoder(fake_face_112)
                 target_identity = generator.identity_encoder(batchB)
             target_label = torch.ones(batchA.size(0)).to(device) #in cosine embedding loss, a label of 1 indicates similar embeddings
             loss_id = criterion_id(fake_identity, target_identity, target_label) #identity loss (compares generated identity to target identity)
@@ -112,10 +113,15 @@ def train():
             optimizer_D.step()
 
         print(f'Epoch {epoch+1}/{epochs}: Generator Loss: {loss_G_total.item():.4f}, Discriminator Loss: {loss_D.item():.4f}')
-        #Save checkpoints every 10 epochs
-        if (epoch+1) % 10 == 0:
+        #Save checkpoints every 50 epochs
+        if (epoch+1) % config['checkpoint_interval'] == 0:
             torch.save(generator.state_dict(), f'{checkpoint_dir}/generator_epoch{epoch+1}_{timestamp}.pt')
             torch.save(discriminator.state_dict(), f'{checkpoint_dir}/discriminator_epoch{epoch+1}_{timestamp}.pt')
+            with torch.inference_mode(): #generate example output image for training progress
+                sample_fake = generator(batchA, target_identity_face=batchB)
+                sample_fake = (sample_fake + 1) / 2
+                sample_fake_img = transforms.ToPILImage()(sample_fake[0].cpu())
+                sample_fake_img.save(f'{checkpoint_dir}/example_output_epoch{epoch+1}_{timestamp}.jpg')
 
     #Save final model
     torch.save(generator.state_dict(), f'{checkpoint_dir}/generator_final_{timestamp}.pt')
