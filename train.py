@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+import datetime
 from models.face_swap_model import FaceSwapModel
 from models.discriminator import Discriminator
 from utils.dataset import FaceDataset
@@ -42,6 +43,10 @@ if config['use_perceptual_loss'] == True: #Define perceptual loss if enabled
     normalize_for_vgg = transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 else:
     criterion_perc = None
+
+timestamp = datetime.datetime.now().strftime('%d%m%Y_%H%M%S')
+checkpoint_dir = os.path.join('checkpoints', timestamp)
+os.makedirs(checkpoint_dir, exist_ok=True)
 
 #Training loop
 def train():
@@ -109,9 +114,13 @@ def train():
         print(f'Epoch {epoch+1}/{epochs}: Generator Loss: {loss_G_total.item():.4f}, Discriminator Loss: {loss_D.item():.4f}')
         #Save checkpoints every 10 epochs
         if (epoch+1) % 10 == 0:
-            os.makedirs('checkpoints', exist_ok=True)
-            torch.save(generator.state_dict(), f'checkpoints/generator_epoch{epoch+1}.pt')
-            torch.save(discriminator.state_dict(), f'checkpoints/discriminator_epoch{epoch+1}.pt')
+            torch.save(generator.state_dict(), f'{checkpoint_dir}/generator_epoch{epoch+1}_{timestamp}.pt')
+            torch.save(discriminator.state_dict(), f'{checkpoint_dir}/discriminator_epoch{epoch+1}_{timestamp}.pt')
+
+    #Save final model
+    torch.save(generator.state_dict(), f'{checkpoint_dir}/generator_final_{timestamp}.pt')
+    torch.save(discriminator.state_dict(), f'{checkpoint_dir}/discriminator_final_{timestamp}.pt')
+    print(f'Training complete. Models saved in {checkpoint_dir}')
 
 if __name__ == '__main__':
     train()
