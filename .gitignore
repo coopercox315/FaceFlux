@@ -172,3 +172,4 @@ cython_debug/
 
 #Large files
 *.pth
+*.jpg
