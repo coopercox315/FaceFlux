@@ -1,0 +1,9 @@
+epochs: 50
+batch_size: 16
+content_latent_dim: 256
+lr: 0.0001
+use_perceptual_loss: True
+lambda_recon: 1.0
+lambda_id: 0.5
+lambda_adv: 0.1
+lambda_perc: 0.1
