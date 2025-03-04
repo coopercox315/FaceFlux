@@ -20,7 +20,7 @@ class FaceSwapModel(nn.Module):
         """
         super(FaceSwapModel, self).__init__()
         self.content_encoder = ContentEncoder(latent_dim=content_latent_dim) #outputs a vector of size content_latent_dim
-        self.identity_encoder = IdentityEncoder(pretrained=True, model_path='ms1mv3_arcface_r100_fp16.pth') #outputs a 512-dimensional identity embedding
+        self.identity_encoder = IdentityEncoder(pretrained=True, model_path='models/ms1mv3_arcface_r100_fp16.pth') #outputs a 512-dimensional identity embedding
         self.identity_latent_dim = 512
 
         fused_dim = content_latent_dim + self.identity_latent_dim #calculates the size of the fused latent vector (sum of the other two)
@@ -43,7 +43,7 @@ class FaceSwapModel(nn.Module):
         """
         Forward pass:
         - input_face (tensor): (batch_size, 3, 128, 128) source face image tensor from which content features are extracted
-        - target_identity_face (tensor, optional): (batch_size, 3, 128, 128) target identity face image tensor from which identity features are extracted
+        - target_identity_face (tensor, optional): (batch_size, 3, 112, 112) target identity face image tensor from which identity features are extracted
         Returns:
         - tensor: (batch_size, 3, 128, 128) reconstructed (swapped) face image.
         """
