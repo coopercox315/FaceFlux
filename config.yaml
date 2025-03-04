@@ -1,4 +1,4 @@
-epochs: 50
+epochs: 100
 batch_size: 16
 content_latent_dim: 256
 lr: 0.0004
@@ -7,3 +7,4 @@ lambda_recon: 1.0
 lambda_id: 0.5
 lambda_adv: 0.1
 lambda_perc: 0.1
+checkpoint_interval: 100
