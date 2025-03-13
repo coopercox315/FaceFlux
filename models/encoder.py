@@ -14,18 +14,18 @@ class ContentEncoder(nn.Module):
         super(ContentEncoder, self).__init__()
         #A series of convolutional layers to progresively extract features and downsample the image.
         self.conv = nn.Sequential(
-            nn.Conv2d(in_channels, 64, kernel_size=4, stride=2, padding=1), #spacial size reduction from 128x128 -> 64x64, outputs 64 channels
+            nn.Conv2d(in_channels, 64, kernel_size=4, stride=2, padding=1), #spacial size reduction from 224x224 -> 112x112, outputs 64 channels
             nn.ReLU(inplace=True),
-            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1), #64x64 -> 32x32, outputs 128 channels
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1), #112x112 -> 56x56, outputs 128 channels
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
-            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1), #32x32 -> 16x16, outputs 256 channels
+            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1), #56x56 -> 28x28, outputs 256 channels
             nn.BatchNorm2d(256),
             nn.ReLU(inplace=True),
         )
         #Fully connected layer to project the flattened feature map into the latent space
-        #For a 128x128 input image, the feature map will be 16x16 (after 3 conv layers with stride 2)
-        self.fc = nn.Linear(256*16*16, latent_dim)
+        #For a 224x224 input image, the feature map will be 28x28 (after 3 conv layers with stride 2)
+        self.fc = nn.Linear(256*28*28, latent_dim)
 
     def forward(self, x):
         """

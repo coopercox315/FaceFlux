@@ -46,18 +46,18 @@ class Decoder(nn.Module):
         """
         super(Decoder, self).__init__()
         #Fully connected layer to map the fused latent vector to a feature map
-        self.fc = nn.Linear(latent_dim, 256*16*16) #16x16 feature map with 256 channels
+        self.fc = nn.Linear(latent_dim, 256*28*28) #28*28 feature map with 256 channels
         #A series of transposed convolutional layers to upsample the feature map back to the original image size
         self.deconv = nn.Sequential(
-            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1), #16x16 -> 32x32, outputs 128 channels
+            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1), #28x28 -> 56x56, outputs 128 channels
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
             AttentionBlock(128), #apply attention to refine the feature maps
-            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1), #32x32 -> 64x64, outputs 64 channels
+            nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1), #56x56 -> 112x112, outputs 64 channels
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
             AttentionBlock(64),
-            nn.ConvTranspose2d(64, out_channels, kernel_size=4, stride=2, padding=1), #64x64 -> 128x128, outputs 3 channels
+            nn.ConvTranspose2d(64, out_channels, kernel_size=4, stride=2, padding=1), #112x112 -> 224x224, outputs 3 channels
             nn.Tanh() #tanh activation to scale the output pixels to the range [-1, 1], matching normalization used in training
         )
 
@@ -66,9 +66,9 @@ class Decoder(nn.Module):
         Forward pass:
         - z (tensor): (batch_size, latent_dim) fused latent vector
         Returns:
-        - tensor: (batch_size, out_channels, 128, 128) reconstructed face image
+        - tensor: (batch_size, out_channels, 224, 224) reconstructed face image
         """
-        x = self.fc(z) #map the fused latent vector to a flat feature map of shape (batch_size, 256*16*16)
-        x = x.view(x.size(0), 256, 16, 16) #reshape to 4D tensor of shape (batch_size, 256, 16, 16)
-        x = self.deconv(x) #upsample the feature map to reconstruct the full image of shape (batch_size, out_channels, 128, 128)
+        x = self.fc(z) #map the fused latent vector to a flat feature map of shape (batch_size, 256*28*28)
+        x = x.view(x.size(0), 256, 28, 28) #reshape to 4D tensor of shape (batch_size, 256, 28, 28)
+        x = self.deconv(x) #upsample the feature map to reconstruct the full image of shape (batch_size, out_channels, 224, 224)
         return x

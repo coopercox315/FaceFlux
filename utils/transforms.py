@@ -2,7 +2,7 @@ import torchvision.transforms as T
 
 #Transform for the generator branch (ContentEncoder, Decoder)
 generator_transform = T.Compose([
-    T.Resize((128, 128), T.InterpolationMode.BILINEAR), #hardcoded for now as our model expects only 128x128 images
+    T.Resize((224, 224), T.InterpolationMode.BILINEAR), #hardcoded for now as our model expects only 224x224 images
     T.ToTensor(),
     T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)) #our network output uses tanh activation, so we normalize to [-1, 1]
 ])
